@@ -21,8 +21,8 @@ def get_weibo_client():
 
 	client = APIClient(app_key=APP_KEY, app_secret=APP_SECRET, redirect_uri=CALLBACK_URL)
 	r = client.request_access_token(code)
-	access_token = r.access_token # 新浪返回的token，类似abc123xyz456
-	expires_in = r.expires_in # token过期的UNIX时间：http://zh.wikipedia.org/wiki/UNIX%E6%97%B6%E9%97%B4
+	access_token = r.access_token 	# 新浪返回的token，类似abc123xyz456
+	expires_in = r.expires_in 		# token过期的UNIX时间：http://zh.wikipedia.org/wiki/UNIX%E6%97%B6%E9%97%B4
 	print 'access_token: ', access_token
 	print 'expires_in: ', expires_in
 	# store in local
@@ -66,85 +66,10 @@ def get_data(client):
 	return text_str			
 
 def send_data(conn, client):
-	data = get_data(client)
+	# data = get_data(client)
+	data = 'hello, I am litaotao'
 	conn.sendall(data.encode('utf-8'))
 	print 'IN THREAD: send to {}, data length: {}'.format(str(conn), str(len(data)))
 	conn.close()
 
-def socket_server():
-	client = get_local_weibo_client() or get_weibo_client()
-
-	# s = socket.socket(socket.AF_INET,socket.SOCK_STREAM)  
-	s = socket.socket()    
-	s.bind((HOST, PORT))
-
-	print 'bind done'  
-	s.listen(10)
-	while  True:
-		print 'wait for connection ...'
-		conn, addr = s.accept()
-		print 'connect with {} : {}'.format(addr[0], str(addr[1]))
-		thread.start_new_thread(send_data, (conn, client))		
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-"""
-new socket server 
-"""
-import socket
-import threading
-import SocketServer
-
-class ThreadedTCPRequestHandler(SocketServer.BaseRequestHandler):
-
-	def handle(self):
-		self.client = get_local_weibo_client() or get_weibo_client()
-		data = get_data(self.client)
-		cur_thread = threading.current_thread()
-		self.request.sendall(data)
-
-class ThreadedTCPServer(SocketServer.ThreadingMixIn, SocketServer.TCPServer):
-    pass
-
-
-if __name__ == "__main__":
-	pass
-	HOST, PORT = "", 9999
-	socket_server()
-    # # Port 0 means to select an arbitrary unused port
-    # HOST, PORT = "localhost", 9999
-    # server = ThreadedTCPServer((HOST, PORT), ThreadedTCPRequestHandler)
-    # ip, port = server.server_address
-
-    # # Start a thread with the server -- that thread will then start one
-    # # more thread for each request
-    # server_thread = threading.Thread(target=server.serve_forever)
-    # # Exit the server thread when the main thread terminates
-    # server_thread.daemon = False
-    # server_thread.start()
-    # print "Server loop running in thread:", server_thread.name
-
-    # # client(ip, port, "Hello World 1")
-    # # client(ip, port, "Hello World 2")
-    # # client(ip, port, "Hello World 3")
-
-    # server.shutdown()
 
