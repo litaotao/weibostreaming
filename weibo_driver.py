@@ -69,7 +69,7 @@ def send_data(conn, client):
 	# data = get_data(client)
 	data = 'hello, I am litaotao'
 	conn.sendall(data.encode('utf-8'))
-	print 'IN THREAD: send to {}, data length: {}'.format(str(conn), str(len(data)))
+	print '\nIN THREAD: send to {}, data length: {}'.format(str(conn), str(len(data)))
 	conn.close()
 
 

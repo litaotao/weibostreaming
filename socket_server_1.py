@@ -12,7 +12,13 @@ def socket_server(HOST, PORT):
 	
 	while  True:
 		print 'wait for connection ...'
+		print '-----------------------'
 		conn, addr = s.accept()
 		print 'connect with {} : {}'.format(addr[0], str(addr[1]))
 		thread.start_new_thread(send_data, (conn, client))		
 	s.shutdown()
+
+
+if __name__ == '__main__':
+	HOST, PORT = '', 9999
+	socket_server(HOST, PORT)
