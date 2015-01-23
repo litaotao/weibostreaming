@@ -56,10 +56,13 @@ def get_local_weibo_client():
 
 	return client
 
-def get_data(client):
-	raw_data = client.statuses.public_timeline.get(count=10)
+def get_data(client, raw=True, count=200):
+	raw_data = client.statuses.public_timeline.get(count=count)
 	statuses = raw_data['statuses']
 
+	if raw:
+		return raw_data
+		
 	text = [i.get('text', '') for i in statuses]
 	text_str = '#:-:#'.join(text)
 	text_str += '\n'

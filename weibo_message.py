@@ -14,8 +14,10 @@ if __name__ == "__main__":
         exit(-1)
     sc = SparkContext(appName="PythonStreamingWeiboMessage")
     ssc = StreamingContext(sc, 5)
-
-    lines = ssc.socketTextStream(sys.argv[1], int(sys.argv[2]))
+    
+    DStream = [ ssc.socketTextStream(sys.argv[1], int(sys.argv[2])) for i in range(9) ]
+    #lines = ssc.socketTextStream(sys.argv[1], int(sys.argv[2]))
+    lines = DStream[0].union(DStream[1])
     lines = change_nothing(lines)
     lines.pprint()
     ssc.start()
