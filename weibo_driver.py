@@ -111,11 +111,11 @@ class SinaWeiboClient(object):
 		self.token_file = token_file
 		self.pool = []
 
-	def __gen_all_client():
+	def __gen_all_client(self):
 		ls = os.listdir()
 		tokens = None
 		if self.token_file not in ls:
-			print 'current directory does not contain token file {}'.format(self.token_file)
+			self.build_token(self.token_file)
 			tokens = []
 		else:
 			f = file(self.token_file, 'r')
@@ -132,7 +132,38 @@ class SinaWeiboClient(object):
 
 			self.pool.append(client)
 
-	def get_client():
+	def build_token(self, filename):
+		all_tokens = []
+		tmp = {}
+		app_key = ['1029531902', '3966337806', '194387379', '1867239709',
+					'1414255866', '2153060451']
+		app_secret = ['424e3c69dc24234ce958a577fcaa0552', '2aa611573beebb85477d96661dcb7338',
+					  '00d508e40faf7770d7733a62e0cc736f', '75bc38d733f1d244d212264c3afb62de',
+					  'ca60eb889706e203040ce4c32d9f9763', '4f14597150e881f6d6fece5761b56f09']
+		callback_url = 'http://litaotao.github.io'
+
+		for i in range(len(app_key)):
+			A_K = app_key[i]
+			A_S = app_secret[i]
+			C_U = callback_url
+			client = APIClient(A_K, A_S, C_U)
+			print 'authorize_url: ', client.get_authorize_url()
+			code = raw_input('code: ')
+			r = client.request_access_token(code)
+			access_token = r.access_token 	# 新浪返回的token，类似abc123xyz456
+			expires_in = r.expires_in 		# token过期的UNIX时间：http://zh.wikipedia.org/wiki/UNIX%E6%97%B6%E9%97%B4
+			tmp['APP_KEY'] = A_K
+			tmp['APP_SECRET'] = A_S
+			tmp['CALLBACK_URL'] = C_U
+			tmp['token'] = access_token
+			tmp['expires'] = expires_in
+			all_tokens.append(tmp)
+			tmp = {}
+		f = file(filename, 'w')
+		json.dump(all_tokens, f)
+		f.close()
+
+	def get_client(self):
 		if self.pool:
 			return self.pool.pop(0)
 		else:
