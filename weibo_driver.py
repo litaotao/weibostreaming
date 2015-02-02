@@ -56,17 +56,29 @@ def get_local_weibo_client():
 
 	return client
 
-def get_data(client, raw=True, count=200):
+def get_data(client, data_type=1, count=200):
 	raw_data = client.statuses.public_timeline.get(count=count)
 	statuses = raw_data['statuses']
 
-	if raw:
+	# import pdb; pdb.set_trace()
+	if data_type == 1:
 		return raw_data
-		
-	text = [i.get('text', '') for i in statuses]
-	text_str = '#:-:#'.join(text)
-	text_str += '\n'
-	return text_str			
+	elif data_type == 2:
+		text = [i.get('text', '') for i in statuses]
+		text_str = '#:-:#'.join(text)
+		text_str += '\n'
+		return text_str			
+	else:
+		res = []
+		tmp = {}
+		for i in statuses:
+			tmp['created_at'] = i['created_at']
+			tmp['text'] = i['text']
+			tmp['name'] = i['user']['name']
+			tmp['location'] = i['user']['location']
+			res.append(tmp)
+			tmp = {}
+		return res
 
 def send_data(conn, client):
 	# data = get_data(client)
@@ -74,5 +86,25 @@ def send_data(conn, client):
 	conn.sendall(data.encode('utf-8'))
 	print '\nIN THREAD: send to {}, data length: {}'.format(str(conn), str(len(data)))
 	conn.close()
+
+def sendto_redis(r, name, data):
+	"""
+	store weibo message in redis server, and spark workers can connect
+	to this redis server to fetch data.
+	data is list of dict, each string is a utf-8 weibo message.
+	"""
+	for i in data:
+		r.lpush(name, i)
+
+def sendto_mongo(client, data):
+	"""
+	store history data in mongo.
+	"""
+	db = client.sinaweibo.history
+	count = db.count()
+	db.insert(dict(index=count+1, msg=data))
+
+
+
 
 
