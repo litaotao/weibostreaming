@@ -105,6 +105,35 @@ def sendto_mongo(client, data):
 	db.insert(dict(index=count+1, msg=data))
 
 
+class SinaWeiboClient(object):
+	"""docstring for SinaWeiboClient"""
+	def __init__(self, token_file):
+		self.token_file = token_file
+		self.pool = []
 
+	def __gen_all_client():
+		ls = os.listdir()
+		tokens = None
+		if self.token_file not in ls:
+			print 'current directory does not contain token file {}'.format(self.token_file)
+			tokens = []
+		else:
+			f = file(self.token_file, 'r')
+			tokens = json.load(f)
+			f.close()
+		for i in tokens:
+			APP_KEY = i['APP_KEY']
+			APP_SECRET = i['APP_SECRET']
+			CALLBACK_URL = i['CALLBACK_URL']
+			client = APIClient(APP_KEY, APP_SECRET, CALLBACK_URL)
+			access_token = i['token']
+			expires_in = i['expires']
+			client.set_access_token(access_token, expires_in)
 
+			self.pool.append(client)
 
+	def get_client():
+		if self.pool:
+			return self.pool.pop(0)
+		else:
+			return None
