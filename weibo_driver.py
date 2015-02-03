@@ -7,12 +7,13 @@ import sys
 import json
 import os
 import thread
+from __init__ import APP_KEY, APP_SECRET, CALLBACK_URL
 
 
 def get_weibo_client():
-	APP_KEY='1029531902'
-	APP_SECRET='424e3c69dc24234ce958a577fcaa0552'
-	CALLBACK_URL='http://litaotao.github.io'
+	APP_KEY = APP_KEY[0]
+	APP_SECRET = APP_SECRET[0]
+	CALLBACK_URL = CALLBACK_URL
 	client = APIClient(app_key=APP_KEY, app_secret=APP_SECRET,
 					   redirect_uri=CALLBACK_URL)
 
@@ -79,13 +80,37 @@ def get_data(client, data_type=1, count=200):
 			tmp['text'] = i['text']
 			tmp['name'] = i['user']['name']
 			tmp['location'] = i['user']['location']
+			tmp['province'] = i['user']['province']
+			tmp['city'] = i['user']['city']
+			tmp['gender'] = i['user']['gender']
+			tmp['idstr'] = i['user']['idstr']
 			res.append(tmp)
 			tmp = {}
 		return res
 
-def send_data(conn, client):
-	# data = get_data(client)
-	data = 'hello, I am litaotao'
+def get_data_from_history(client, number):
+	"""从本地mongo数据库中获取已存储的历史微博数据。
+	一次返回20条数据咯~
+	conn: 连接SS的worker
+	client: MongoDB client
+	number: 表示获取第几片(20条为一片)数据
+	"""
+	index = number * 20 / 200
+	data = client.sinaweibo.find({'index': index}, {'_id': 0, 'msg': 1})
+	msg = data['msg']
+	res = msg[(number-1)*20 : number*20]
+
+	return res
+
+def send_data(conn, client, data_type, number):
+	data = None
+	if data_type == 1:
+		data = 'hello, boys and sweet girls, I am litaotao . . .'
+	elif data_type == 2:
+		data = get_data(client)
+	else:
+		data = get_data_from_history(client, number)
+
 	conn.sendall(data.encode('utf-8'))
 	print '\nIN THREAD: send to {}, data length: {}'.format(str(conn), str(len(data)))
 	conn.close()
@@ -139,12 +164,9 @@ class SinaWeiboClient(object):
 	def build_token(self):
 		all_tokens = []
 		tmp = {}
-		app_key = ['1029531902', '3966337806', '194387379', '1867239709',
-					'1414255866', '2153060451']
-		app_secret = ['424e3c69dc24234ce958a577fcaa0552', '2aa611573beebb85477d96661dcb7338',
-					  '00d508e40faf7770d7733a62e0cc736f', '75bc38d733f1d244d212264c3afb62de',
-					  'ca60eb889706e203040ce4c32d9f9763', '4f14597150e881f6d6fece5761b56f09']
-		callback_url = 'http://litaotao.github.io'
+		app_key = APP_KEY
+		app_secret = APP_SECRET
+		callback_url = CALLBACK_URL
 
 		for i in range(len(app_key)):
 			A_K = app_key[i]
@@ -170,4 +192,10 @@ class SinaWeiboClient(object):
 	def get_client(self):
 		if self.next == len(self.pool):
 			self.next = 0
-		return self.pool[self.next]
+		client = self.pool[self.next]
+		print '-----------------------------------'
+		print 'Use client No.{}'.format(self.next)
+		print '-----------------------------------\n\n'
+		self.next += 1
+
+		return client 

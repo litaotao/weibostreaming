@@ -18,11 +18,15 @@ def get_history_data():
 	count = 0
 
 	while True:
+	# import pdb; pdb.set_trace()
+	# for i in range(10):
 		try:
 			data = wd.get_data(weibo_client, data_type=3, count=200)
 		except:
 			print 'Oops, this client is out of request limit, user another one'
-			weibo_client = SinaWeiboClient.get_client(weibo_client)
+			weibo_client = SinaWeiboClient.get_client()
+			data = wd.get_data(weibo_client, data_type=3, count=200)
+			continue
 
 		wd.sendto_mongo(mongo_client, data)
 		print 'No.{}, time: {}, weibo number: {}'.format(count,
