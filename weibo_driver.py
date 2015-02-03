@@ -35,18 +35,21 @@ def get_weibo_client():
 	return client
 
 def get_local_weibo_client():
-	token = None
+	all_tokens = None
 	if 'token.json' not in os.listdir('.'):
 		print 'no token.json file'
 		return None
 	else:
 		f = file('token.json', 'r')
-		token = json.load(f)
+		all_tokens = json.load(f)
 		f.close()
+	if not all_tokens:
+		return None
 
-	APP_KEY='1029531902'
-	APP_SECRET='424e3c69dc24234ce958a577fcaa0552'
-	CALLBACK_URL='http://litaotao.github.io'
+	token = all_tokens.pop(0)
+	APP_KEY = token['APP_KEY']
+	APP_SECRET = token['APP_SECRET']
+	CALLBACK_URL = token['CALLBACK_URL']
 	client = APIClient(app_key=APP_KEY, app_secret=APP_SECRET,
 					   redirect_uri=CALLBACK_URL)
 	access_token = token['token']
@@ -110,12 +113,13 @@ class SinaWeiboClient(object):
 	def __init__(self, token_file):
 		self.token_file = token_file
 		self.pool = []
+		self.next = 0
 
-	def __gen_all_client(self):
-		ls = os.listdir()
+	def gen_all_client(self):
+		ls = os.listdir('.')
 		tokens = None
 		if self.token_file not in ls:
-			self.build_token(self.token_file)
+			self.build_token()
 			tokens = []
 		else:
 			f = file(self.token_file, 'r')
@@ -132,7 +136,7 @@ class SinaWeiboClient(object):
 
 			self.pool.append(client)
 
-	def build_token(self, filename):
+	def build_token(self):
 		all_tokens = []
 		tmp = {}
 		app_key = ['1029531902', '3966337806', '194387379', '1867239709',
@@ -159,12 +163,11 @@ class SinaWeiboClient(object):
 			tmp['expires'] = expires_in
 			all_tokens.append(tmp)
 			tmp = {}
-		f = file(filename, 'w')
+		f = file(self.token_file, 'w')
 		json.dump(all_tokens, f)
 		f.close()
 
 	def get_client(self):
-		if self.pool:
-			return self.pool.pop(0)
-		else:
-			return None
+		if self.next == len(self.pool):
+			self.next = 0
+		return self.pool[self.next]
