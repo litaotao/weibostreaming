@@ -15,19 +15,20 @@ def get_history_data():
 	SinaWeiboClient.gen_all_client()
 	mongo_client = MongoClient('localhost', 27017)
 	weibo_client = SinaWeiboClient.get_client() 
+	count = 0
 
 	while True:
 		try:
 			data = wd.get_data(weibo_client, data_type=3, count=200)
 		except:
 			print 'Oops, this client is out of request limit, user another one'
-			token_cycle.append(weibo_client)
 			weibo_client = SinaWeiboClient.get_client(weibo_client)
 
 		wd.sendto_mongo(mongo_client, data)
-		print 'time: {}, weibo number: {}'.format(
+		print 'No.{}, time: {}, weibo number: {}'.format(count,
 				datetime.datetime.now().isoformat(), len(data))
 
+		count += 1
 		time.sleep(5)
 
 
