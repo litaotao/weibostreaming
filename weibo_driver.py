@@ -89,7 +89,7 @@ def get_data(client, data_type=1, count=200):
 			tmp = {}
 		return res
 
-def get_data_from_history(client, number):
+def get_data_from_history(client, addr, number):
 	"""从本地mongo数据库中获取已存储的历史微博数据。
 	一次返回1条数据咯~
 	conn: 连接SS的worker
@@ -102,9 +102,9 @@ def get_data_from_history(client, number):
 	msg = data['msg']
 	res = msg[(number%200 - 1)  : number%200 ]
 
-	return  'Recv No.{} '.format(number) + str(res) 
+	return  'Recv No.{} Addr:{} '.format(number, addr) + str(res) 
 
-def send_data(conn, client, data_type, number=0):
+def send_data(conn, addr, client, data_type, number=0):
 	data = None
 	if data_type == 1:
 		data = 'hello, boys and sweet girls, I am litaotao . . .'
@@ -112,7 +112,7 @@ def send_data(conn, client, data_type, number=0):
 		data = get_data(client)
 	else:
 		client = mongo_client
-		data = get_data_from_history(client, number)
+		data = get_data_from_history(client, addr, number)
 
 	conn.sendall(data.encode('utf-8'))
 	print 'IN THREAD: send to {}, data length: {}'.format(str(conn), str(len(data)))
