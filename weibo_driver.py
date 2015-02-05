@@ -7,7 +7,8 @@ import sys
 import json
 import os
 import thread
-from __init__ import APP_KEY, APP_SECRET, CALLBACK_URL
+from __init__ import APP_KEY, APP_SECRET, CALLBACK_URL, mongo_client
+
 
 
 def get_weibo_client():
@@ -90,29 +91,31 @@ def get_data(client, data_type=1, count=200):
 
 def get_data_from_history(client, number):
 	"""从本地mongo数据库中获取已存储的历史微博数据。
-	一次返回20条数据咯~
+	一次返回1条数据咯~
 	conn: 连接SS的worker
 	client: MongoDB client
 	number: 表示获取第几片(20条为一片)数据
 	"""
-	index = number * 20 / 200
-	data = client.sinaweibo.find({'index': index}, {'_id': 0, 'msg': 1})
+	index = number * 1 / 201 + 1
+	data = client.sinaweibo.history.find({'index': index}, {'_id': 0, 'msg': 1})
+	data = data[0]
 	msg = data['msg']
-	res = msg[(number-1)*20 : number*20]
+	res = msg[(number%200 - 1)  : number%200 ]
 
-	return res
+	return  'Recv No.{} '.format(number) + str(res) 
 
-def send_data(conn, client, data_type, number):
+def send_data(conn, client, data_type, number=0):
 	data = None
 	if data_type == 1:
 		data = 'hello, boys and sweet girls, I am litaotao . . .'
 	elif data_type == 2:
 		data = get_data(client)
 	else:
+		client = mongo_client
 		data = get_data_from_history(client, number)
 
 	conn.sendall(data.encode('utf-8'))
-	print '\nIN THREAD: send to {}, data length: {}'.format(str(conn), str(len(data)))
+	print 'IN THREAD: send to {}, data length: {}'.format(str(conn), str(len(data)))
 	conn.close()
 
 def sendto_redis(r, name, data):

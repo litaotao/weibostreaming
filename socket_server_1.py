@@ -15,7 +15,7 @@ def socket_server(HOST, PORT):
 		print '-----------------------'
 		conn, addr = s.accept()
 		print 'connect with {} : {}'.format(addr[0], str(addr[1]))
-		thread.start_new_thread(send_data, (conn, client))		
+		thread.start_new_thread(send_data, (conn, client, 1))		
 	s.shutdown()
 
 
