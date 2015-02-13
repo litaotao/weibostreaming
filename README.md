@@ -8,4 +8,6 @@ All tutorial or docs for this lib are avaiable on my [blog](http://litaotao.gith
 
 # Tutorial  
 
+- step 1. Define your sina weibo APP_KEY, APP_SECRET and CALLBACK_URL in app.cfg, here I provide a template app-template.cfg
+ 
 

@@ -102,7 +102,7 @@ def get_data_from_history(client, addr, number):
 	msg = data['msg']
 	res = msg[(number%200 - 1)  : number%200 ]
 
-	return  'Recv No.{} Addr:{} '.format(number, addr) + str(res) 
+	return  'Recv:No.{}[@3#2$7%]Addr:{}[@3#2$7%]'.format(number, addr) + str(res) 
 
 def send_data(conn, addr, client, data_type, number=0):
 	data = None
